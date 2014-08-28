@@ -20,7 +20,7 @@ enyo.kind({
     positionControls:function() {
         var c = this.getClientControls();
         if(c.length === 0) return;
-        
+
         var m2 = this.margin*2,
             d = this.getDimensions(),
             colsPerRow = Math.floor(d.width/(m2+this.width)),
@@ -75,8 +75,15 @@ enyo.kind({
     },
     getDimensions:function() {
         if(!this.dim) {
-            var s = enyo.dom.getComputedStyle(this.container.hasNode());           
-            this.dim = {width:parseInt(s.width),height:parseInt(s.height)};
+            /*
+             * enyo.dom has a method to support ie8 for getComputedStyle, but it fails with width and height dimensions.
+             * Calling enyo.dom.getComputedStyleValue for width and height instead works like a charm.
+             */
+            // var s = enyo.dom.getComputedStyle(this.container.hasNode());
+            this.dim = {
+                width: parseInt(enyo.dom.getComputedStyleValue(this.container.hasNode(),"width")),
+                height: parseInt(enyo.dom.getComputedStyleValue(this.container.hasNode(),"height"))
+            };
             this.calcAlignmentMargin(this.dim);
         }
         
