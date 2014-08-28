@@ -23,23 +23,35 @@ enyo.kind({
         
         var m2 = this.margin*2,
             d = this.getDimensions(),
-            colsPerRow = Math.floor(d.width/(m2+this.width));
+            colsPerRow = Math.floor(d.width/(m2+this.width)),
+            numRows = Math.floor(this.container.children.length/colsPerRow)+1;
 
         for(var i=0;i<c.length;i++) {
-            this.positionControl(c[i], i, colsPerRow);
+            this.positionControl(c[i], i, colsPerRow, numRows);
         }
         
         var h = Math.floor(c.length/colsPerRow)*(m2+this.height);
         this.container.applyStyle("height", h + "px");
     },
     // does the position calculation for a control and applies the style
-    positionControl:function(control, index, colsPerRow) {
+    positionControl:function(control, index, colsPerRow, numRows) {
         var m2 = this.margin*2,
             top = (this.collapsed) ? 0 : Math.floor(index/colsPerRow)*(m2+this.height),
-            left = (this.collapsed) ? this.alignmentMargin : (index%colsPerRow)*(m2+this.width)+this.alignmentMargin;
+            left = (this.collapsed) ? this.alignmentMargin : (index%colsPerRow)*(m2+this.width)+this.alignmentMargin,
+            row = Math.floor(index/colsPerRow)+1;
 
         control.applyStyle("top", top + "px");
-        control.applyStyle("left", left + "px");
+        if (colsPerRow < 2 || numRows-row) {
+            control.applyStyle("left", left + "px");
+        } else { // Da sistemare, non è una soluzione universale
+            if (this.align2 === "center") {
+                control.applyStyle("left", Math.floor(left+this.width/2+this.margin*(colsPerRow-2)) + "px");
+            } else if (this.align2 === "right") {
+                control.applyStyle("left", Math.floor(left+this.width+this.margin*(colsPerRow-1)) + "px");
+            } else {
+                control.applyStyle("left", left + "px");
+            }
+        }
         control.applyStyle("opacity", (this.collapsed && index !== 0) ? 0 : 1);
     },
     // reflows controls when window.resize event fires (e.g. device rotation)
@@ -53,6 +65,7 @@ enyo.kind({
         this.width = this.container.cellWidth || 100;
         this.deferTime = this.container.deferTime || 0;
         this.align = this.container.gridAlign || "left";
+        this.align2 = this.container.gridAlign2 || "left";
 
         if(!this.deferTime) {
             this.positionControls();
